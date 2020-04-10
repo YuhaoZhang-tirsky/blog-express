@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session)
 
 // var indexRouter = require('./routes/index');
 // var usersRouter = require('./routes/users');
@@ -14,6 +16,20 @@ var app = express();
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'jade');
+
+const redisClient = require('./db/redis')
+const sessionStore = new RedisStore({
+  client: redisClient
+})
+app.use(session({
+  secret: 'DJbSasd_341312345#',
+  cookie: {
+    // path: '/', //default
+    // httpOnly: true, //default
+    maxAge: 24 * 60 * 60 * 1000
+  },
+  store: sessionStore
+}))
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -39,7 +55,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.send('error');
 });
 
 module.exports = app;
